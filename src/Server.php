@@ -221,7 +221,7 @@ class Server
             ])
         );
 
-        return [$css, $etag];
+        return array($css, $etag);
     }
 
     /**
