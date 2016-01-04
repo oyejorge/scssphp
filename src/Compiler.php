@@ -541,7 +541,7 @@ class Compiler
             }
         }
 
-        if (count($tag)) {
+        if ( $tag ) {
             array_unshift($out, $tag[0]);
         }
 
@@ -725,7 +725,7 @@ class Compiler
                 $b->children = array(array($type, $newBlock));
 
                 $newBlock->parent = $b;
-            } elseif (count($block->children)) {
+            } elseif ( $block->children ) {
                 foreach ($block->children as $child) {
                     if ($child[0] === Type::T_BLOCK) {
                         $child[1]->parent = $b;
@@ -928,7 +928,7 @@ class Compiler
 
         $out = $this->makeOutputBlock(null);
 
-        if (isset($this->lineNumberStyle) && count($env->selectors) && count($block->children)) {
+        if (isset($this->lineNumberStyle) && $env->selectors && $block->children ) {
             $annotation = $this->makeOutputBlock(Type::T_COMMENT);
             $annotation->depth = 0;
 
@@ -951,7 +951,7 @@ class Compiler
 
         $this->scope->children[] = $out;
 
-        if (count($block->children)) {
+        if ( $block->children ) {
             $out->selectors = $this->multiplySelectors($env);
 
             $this->compileChildrenNoReturn($block->children, $out);
@@ -1377,7 +1377,7 @@ class Compiler
 
         if ($rawPath[0] === Type::T_LIST) {
             // handle a list of strings
-            if (count($rawPath[2]) === 0) {
+            if ( !$rawPath[2] ) {
                 return false;
             }
 
@@ -3501,7 +3501,7 @@ class Compiler
                 } else {
                     $keywordArgs[$arg[0][1]] = $arg[1];
                 }
-            } elseif (count($keywordArgs)) {
+            } elseif ($keywordArgs) {
                 $this->throwError('Positional arguments must come before keyword arguments.');
                 break;
             } elseif ($arg[2] === true) {
@@ -3966,7 +3966,7 @@ class Compiler
             $args
         );
 
-        if (count($kwargs)) {
+        if ( $kwargs ) {
             foreach ($kwargs as $key => $value) {
                 $args[] = array(array(Type::T_VARIABLE, $key), $value, false);
             }
