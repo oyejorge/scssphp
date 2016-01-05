@@ -1315,13 +1315,12 @@ class Parser
      */
     protected function expHelper($lhs, $minP)
     {
-        $operators = self::$operatorPattern;
 
         $ss = $this->count;
-        $whiteBefore = isset($this->buffer[$this->count - 1]) &&
-            ctype_space($this->buffer[$this->count - 1]);
+        $whiteBefore = isset($this->buffer[$this->count - 1]) && ctype_space($this->buffer[$this->count - 1]);
 
-        while ($this->match($operators, $m, false) && self::$precedence[$m[1]] >= $minP) {
+
+        while ($this->match(self::$operatorPattern, $m, false) && self::$precedence[$m[1]] >= $minP) {
             $whiteAfter = isset($this->buffer[$this->count]) &&
                 ctype_space($this->buffer[$this->count]);
             $varAfter = isset($this->buffer[$this->count]) &&
@@ -1341,7 +1340,7 @@ class Parser
             }
 
             // peek and see if rhs belongs to next operator
-            if ($this->peek($operators, $next) && self::$precedence[$next[1]] > self::$precedence[$op]) {
+            if ($this->peek(self::$operatorPattern, $next) && self::$precedence[$next[1]] > self::$precedence[$op]) {
                 $rhs = $this->expHelper($rhs, self::$precedence[$next[1]]);
             }
 
