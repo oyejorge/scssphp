@@ -3954,7 +3954,7 @@ class Compiler
 
     // Built in functions
 
-    //protected static $libCall = array('name', 'args...');
+    protected static $libCall = array('name', 'args...');
     protected function libCall($args, $kwargs)
     {
         $name = $this->compileStringContent($this->coerceString($this->reduce(array_shift($args), true)));
