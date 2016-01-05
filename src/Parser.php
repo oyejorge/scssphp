@@ -66,6 +66,7 @@ class Parser
     private $utf8;
     private $encoding;
     private $patternModifiers = 'Ais';
+    private $patternKeywords;
 
 
     /**
@@ -86,7 +87,10 @@ class Parser
 
         if ($this->utf8) {
             $this->patternModifiers = 'Aisu';
-        }
+            $this->patternKeywords = '(([\pL\w_\-\*!"\']|[\\\\].)([\pL\w\-_"\']|[\\\\].)*)';
+        }else{
+			$this->patternKeywords = '(([\w_\-\*!"\']|[\\\\].)([\w\-_"\']|[\\\\].)*)';
+		}
 
         if (empty(self::$operatorPattern)) {
             self::$operatorPattern = '([*\/%+-]|[!=]\=|\>\=?|\<\=\>|\<\=?|and|or)';
@@ -2343,15 +2347,8 @@ class Parser
      */
     protected function keyword(&$word, $eatWhitespace = null)
     {
-        if ($this->match(
-            $this->utf8
-                ? '(([\pL\w_\-\*!"\']|[\\\\].)([\pL\w\-_"\']|[\\\\].)*)'
-                : '(([\w_\-\*!"\']|[\\\\].)([\w\-_"\']|[\\\\].)*)',
-            $m,
-            $eatWhitespace
-        )) {
+        if ($this->match($this->patternKeywords, $m, $eatWhitespace )) {
             $word = $m[1];
-
             return true;
         }
 
