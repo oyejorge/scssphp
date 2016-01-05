@@ -67,6 +67,7 @@ class Parser
     private $encoding;
     private $patternModifiers = 'Ais';
     private $patternKeywords;
+    private $patternPlaceholder;
 
 
     /**
@@ -88,8 +89,10 @@ class Parser
         if ($this->utf8) {
             $this->patternModifiers = 'Aisu';
             $this->patternKeywords = '(([\pL\w_\-\*!"\']|[\\\\].)([\pL\w\-_"\']|[\\\\].)*)';
+			$this->patternPlaceholder = '([\pL\w\-_]+|#[{][$][\pL\w\-_]+[}])';
         }else{
 			$this->patternKeywords = '(([\w_\-\*!"\']|[\\\\].)([\w\-_"\']|[\\\\].)*)';
+			$this->patternPlaceholder = '([\w\-_]+|#[{][$][\w\-_]+[}])';
 		}
 
         if (empty(self::$operatorPattern)) {
@@ -2364,12 +2367,7 @@ class Parser
      */
     protected function placeholder(&$placeholder)
     {
-        if ($this->match(
-            $this->utf8
-                ? '([\pL\w\-_]+|#[{][$][\pL\w\-_]+[}])'
-                : '([\w\-_]+|#[{][$][\w\-_]+[}])',
-            $m
-        )) {
+        if ($this->match($this->patternPlaceholder, $m)) {
             $placeholder = $m[1];
 
             return true;
