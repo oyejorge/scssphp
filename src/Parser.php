@@ -346,7 +346,7 @@ class Parser
 
         // property shortcut
         // captures most properties before having to parse a selector
-        if ($this->keyword($name, false) && $this->literal(': ',2) && $this->valueList($value) && $this->end() ) {
+        if ($this->keywordChar($char,$name, false) && $this->literal(': ',2) && $this->valueList($value) && $this->end() ) {
             $name = array(Type::T_STRING, '', array($name));
             $this->append(array(Type::T_ASSIGN, $name, $value), $s);
             return true;
@@ -1406,7 +1406,7 @@ class Parser
         // negation
         if( $char === '-' ){
 			$this->count++;
-			if( $this->variable($inner) || $this->unit($inner) || $this->parenValue($inner) ){
+			if( $this->variable($inner) || $this->unit('1', $inner) || $this->parenValue($inner) ){
 				$out = array(Type::T_UNARY, '-', $inner, $this->inParens);
 				return true;
 			}
@@ -1438,11 +1438,11 @@ class Parser
 		}
 
 
-        if ( $this->unit($out) ) {
+        if ( $this->unit($char, $out) ) {
             return true;
         }
 
-        if ($this->keyword($keyword, false)) {
+        if ($this->keywordChar($char, $keyword, false)) {
 
 			if( $this->func($keyword, $out) ){
 				return true;
@@ -1765,8 +1765,12 @@ class Parser
      *
      * @return boolean
      */
-    protected function unit(&$unit)
-    {
+    protected function unit($char, &$unit){
+
+        if( !ctype_digit($char) && $char != '.' ){
+			return false;
+		}
+
         if ($this->match('([0-9]*(\.)?[0-9]+)([%a-zA-Z]+)?', $m)) {
             $unit = new Node\Number($m[1], empty($m[3]) ? '' : $m[3]);
 
@@ -1869,7 +1873,8 @@ class Parser
         $this->eatWhiteDefault = false;
 
         for (;;) {
-            if ($this->keyword($key)) {
+			$char = $this->buffer[$this->count];
+            if ($this->keywordChar($char,$key)) {
                 $parts[] = $key;
                 continue;
             }
@@ -2291,16 +2296,14 @@ class Parser
 
 
             // for keyframes
-            if ($this->unit($unit)) {
+            if ($this->unit($char, $unit)) {
                 $parts[] = $unit;
                 continue;
             }
 
-			if( $char != ':' && $char != '#' && $char != '>' && $char != ' ' ){
-				if ($this->keyword($name)) {
-					$parts[] = $name;
-					continue;
-				}
+			if( $this->keywordChar($char, $name) ){
+				$parts[] = $name;
+				continue;
 			}
 
             break;
@@ -2356,6 +2359,21 @@ class Parser
 
         return false;
     }
+
+    protected function keywordChar($char, &$word, $eatWhitespace = null){
+		if( $char == ':' || $char == '#' || $char == '>' || $char == ' ' || $char == ';' || $char == '(' || $char == ')' || $char == ',' || $char == '{' || $char == '}' ){
+			return false;
+		}
+
+        if ($this->match($this->patternKeywords, $m, $eatWhitespace )) {
+            $word = $m[1];
+            return true;
+        }
+
+        //msg('not keyword: ('.substr($this->buffer,$this->count,1).')');
+
+        return false;
+	}
 
     /**
      * Parse a placeholder
