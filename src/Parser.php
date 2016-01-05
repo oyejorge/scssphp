@@ -2296,13 +2296,12 @@ class Parser
                 continue;
             }
 
-            if ($this->keyword($name)) {
-                $parts[] = $name;
-                continue;
-            }
-
-
-
+			if( $char != ':' && $char != '#' && $char != '>' && $char != ' ' ){
+				if ($this->keyword($name)) {
+					$parts[] = $name;
+					continue;
+				}
+			}
 
             break;
         }
