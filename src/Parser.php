@@ -2360,7 +2360,8 @@ class Parser
     }
 
     protected function keywordChar($char, &$word, $eatWhitespace = null){
-		if( $char == ':' || $char == '#' || $char == '>' || $char == ' ' || $char == ';' || $char == '(' || $char == ')' || $char == ',' || $char == '{' || $char == '}' || $char == '.' ){
+		if( $char == ':' || $char == '#' || $char == '>' || $char == ' ' || $char == ';' || $char == '(' || $char == ')'
+			|| $char == ',' || $char == '{' || $char == '}' || $char == '.' || $char == '$' || $char == '&' || $char == '%' ){
 			return false;
 		}
 
@@ -2368,8 +2369,6 @@ class Parser
             $word = $m[1];
             return true;
         }
-
-        msg('not keyword: ('.substr($this->buffer,$this->count,1).')');
 
         return false;
 	}
