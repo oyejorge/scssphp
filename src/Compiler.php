@@ -1022,18 +1022,21 @@ class Compiler
     protected function evalSelectorPart($part)
     {
         foreach ($part as &$p) {
-            if (is_array($p) && ($p[0] === Type::T_INTERPOLATE || $p[0] === Type::T_STRING)) {
-                $p = $this->compileValue($p);
 
-                // force re-evaluation
-                if (strpos($p, '&') !== false || strpos($p, ',') !== false) {
-                    $this->shouldEvaluate = true;
-                }
-            } elseif (is_string($p) && strlen($p) >= 2 &&
-                ($first = $p[0]) && ($first === '"' || $first === "'") &&
-                substr($p, -1) === $first
-            ) {
-                $p = substr($p, 1, -1);
+			if( is_string($p) ){
+				if( isset($p[2]) && ($p[0] === '"' || $p[0] === "'") && substr($p, -1) === $p[0] ){
+					$p = substr($p, 1, -1);
+				}
+
+			}elseif( is_array($p) ){
+				if( $p[0] === Type::T_INTERPOLATE || $p[0] === Type::T_STRING ){
+					$p = $this->compileValue($p);
+
+					// force re-evaluation
+					if (strpos($p, '&') !== false || strpos($p, ',') !== false) {
+						$this->shouldEvaluate = true;
+					}
+				}
             }
         }
 
