@@ -342,19 +342,20 @@ class Compiler
                 // check extends
                 if (! empty($this->extendsMap)) {
                     $this->matchExtends($s, $selectors);
-
-                    // remove duplicates
-                    array_walk($selectors, function (&$value) {
-                        $value = serialize($value);
-                    });
-
-                    $selectors = array_unique($selectors);
-
-                    array_walk($selectors, function (&$value) {
-                        $value = unserialize($value);
-                    });
                 }
             }
+
+			// remove duplicates
+			array_walk($selectors, function (&$value) {
+				$value = serialize($value);
+			});
+
+			$selectors = array_unique($selectors);
+
+			array_walk($selectors, function (&$value) {
+				$value = unserialize($value);
+			});
+
 
             $block->selectors = array();
             $placeholderSelector = false;
@@ -368,7 +369,7 @@ class Compiler
                 $block->selectors[] = $this->compileSelector($selector);
             }
 
-            if ($placeholderSelector && 0 === count($block->selectors) && null !== $parentKey) {
+            if ($placeholderSelector && !$block->selectors && null !== $parentKey) {
                 unset($block->parent->children[$parentKey]);
 
                 return;
@@ -1082,7 +1083,7 @@ class Compiler
         $joined = array();
 
         foreach ($single as $part) {
-            if (empty($joined) || ! is_string($part) || preg_match('/[\[.:#%]/', $part)) {
+            if (empty($joined) || ! is_string($part) || preg_match('/[\[.:#%&]/', $part)) {
                 $joined[] = $part;
                 continue;
             }
