@@ -1976,14 +1976,13 @@ class Parser
      *
      * @return boolean
      */
-    protected function interpolation(&$out, $lookWhite = true)
-    {
+    protected function interpolation(&$out, $lookWhite = true){
         $oldWhite = $this->eatWhiteDefault;
         $this->eatWhiteDefault = true;
 
         $s = $this->count;
 
-        if ($this->literal('#{',2) && $this->valueList($value) && $this->matchChar('}', false)) {
+        if( $this->literal('#{',2) && $this->valueList($value) && $this->matchChar('}', false)) {
             if ($lookWhite) {
                 $left = preg_match('/\s/', $this->buffer[$s - 1]) ? ' ' : '';
                 $right = preg_match('/\s/', $this->buffer[$this->count]) ? ' ': '';
@@ -2162,8 +2161,7 @@ class Parser
      *
      * @return boolean
      */
-    protected function selectorSingle(&$out)
-    {
+    protected function selectorSingle(&$out){
         $oldWhite = $this->eatWhiteDefault;
         $this->eatWhiteDefault = false;
 
@@ -2189,20 +2187,30 @@ class Parser
 
 
             //self
-            switch($char){
-                case '&':
-                    $parts[] = Compiler::$selfSelector;
-                    $this->count++;
-                continue 2;
-                case '.':
-                    $parts[] = '.';
-                    $this->count++;
-                continue 2;
-                case '|':
-                    $parts[] = '|';
-                    $this->count++;
-                continue 2;
+            if( $char === '&' ){
+				$parts[] = Compiler::$selfSelector;
+				$this->count++;
+				continue;
+			}
+
+			if( $char === '|' ){
+				$parts[] = '|';
+				$this->count++;
+				continue;
             }
+
+
+			//classes
+            if( $char === '.' ){
+				$this->count++;
+				if( $this->keyword($name) ){
+					$parts[] = '.'.$name;
+					continue;
+				}
+
+                $parts[] = '.';
+				continue;
+			}
 
 
             if ($char === '\\' && $this->match('\\\\\S', $m)) {
@@ -2222,6 +2230,7 @@ class Parser
             }
 
 
+			//id or interpolation
             if ($char === '#' ) {
 
 				if ($this->interpolation($inter)) {
@@ -2229,8 +2238,14 @@ class Parser
 					continue;
 				}
 
-                $parts[] = '#';
                 $this->count++;
+
+				if( $this->keyword($name) ){
+					$parts[] = '#'.$name;
+					continue;
+				}
+
+                $parts[] = '#';
                 continue;
             }
 
