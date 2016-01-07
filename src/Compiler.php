@@ -1662,12 +1662,15 @@ class Compiler
                 foreach ($prop->children as $child) {
                     switch ($child[0]) {
                         case Type::T_ASSIGN:
+							if( !is_array($child[1]) ){
+								$child[1] = array(Type::T_STRING, '', array($child[1]));
+							}
                             array_unshift($child[1][2], $prefix);
-                            break;
+                        break;
 
                         case Type::T_NESTED_PROPERTY:
                             array_unshift($child[1]->prefix[2], $prefix);
-                            break;
+                        break;
                     }
 
                     $prefixed[] = $child;

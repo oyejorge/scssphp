@@ -347,7 +347,6 @@ class Parser
         // property shortcut
         // captures most properties before having to parse a selector
         if ($this->keywordChar($char,$name, false) && $this->literal(': ',2) && $this->valueList($value) && $this->end() ) {
-            $name = array(Type::T_STRING, '', array($name));
             $this->append(array(Type::T_ASSIGN, $name, $value), $s);
             return true;
         }
