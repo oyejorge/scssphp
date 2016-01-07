@@ -1084,11 +1084,11 @@ class Parser
             $prop = array(Type::T_MEDIA_TYPE);
 
             if (isset($only)) {
-                $prop[] = array(Type::T_KEYWORD, 'only');
+                $prop[] = 'only'; //array(Type::T_KEYWORD, 'only');
             }
 
             if (isset($not)) {
-                $prop[] = array(Type::T_KEYWORD, 'not');
+                $prop[] = 'not'; //array(Type::T_KEYWORD, 'not');
             }
 
             $media = array(Type::T_LIST, '', array());
@@ -1097,7 +1097,7 @@ class Parser
                 if (is_array($type)) {
                     $media[2][] = $type;
                 } else {
-                    $media[2][] = array(Type::T_KEYWORD, $type);
+                    $media[2][] = $type; //array(Type::T_KEYWORD, $type);
                 }
             }
 
@@ -1452,7 +1452,7 @@ class Parser
             if ($keyword === 'null') {
                 $out = array(Type::T_NULL);
             } else {
-                $out = array(Type::T_KEYWORD, $keyword);
+                $out = $keyword; //array(Type::T_KEYWORD, $keyword);
             }
 
             return true;
@@ -2442,12 +2442,14 @@ class Parser
         for ($token = &$value; $token[0] === Type::T_LIST && ($s = count($token[2])); $token = &$lastNode) {
             $lastNode = &$token[2][$s - 1];
 
-            if ($lastNode[0] === Type::T_KEYWORD && in_array($lastNode[1],array('!default', '!global'))) {
+
+            if( is_string($lastNode) && in_array($lastNode,array('!default', '!global'))) {
+            //if ($lastNode[0] === Type::T_KEYWORD && in_array($lastNode[1],array('!default', '!global'))) {
                 array_pop($token[2]);
 
                 $token = $this->flattenList($token);
 
-                return $lastNode[1];
+                return $lastNode;
             }
         }
 

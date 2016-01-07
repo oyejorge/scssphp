@@ -93,17 +93,17 @@ class Compiler
         'function' => '^',
     );
 
-    static public $true = array(Type::T_KEYWORD, 'true');
-    static public $false = array(Type::T_KEYWORD, 'false');
+    static public $true = 'true'; //array(Type::T_KEYWORD, 'true');
+    static public $false = 'false'; //array(Type::T_KEYWORD, 'false');
     static public $null = array(Type::T_NULL);
     static public $nullString = array(Type::T_STRING, '', array());
-    static public $defaultValue = array(Type::T_KEYWORD, '');
+    static public $defaultValue = ''; //array(Type::T_KEYWORD, '');
     static public $selfSelector = array(Type::T_SELF);
     static public $emptyList = array(Type::T_LIST, '', array());
     static public $emptyMap = array(Type::T_MAP, array(), array());
     static public $emptyString = array(Type::T_STRING, '"', array());
-    static public $with = array(Type::T_KEYWORD, 'with');
-    static public $without = array(Type::T_KEYWORD, 'without');
+    static public $with = 'with'; //array(Type::T_KEYWORD, 'with');
+    static public $without = 'without'; //array(Type::T_KEYWORD, 'without');
 
     protected $importPaths = array('');
     protected $importCache = array();
@@ -1079,10 +1079,7 @@ class Compiler
         $joined = array();
 
         foreach ($single as $part) {
-            if (empty($joined) ||
-                ! is_string($part) ||
-                preg_match('/[\[.:#%]/', $part)
-            ) {
+            if (empty($joined) || ! is_string($part) || preg_match('/[\[.:#%]/', $part)) {
                 $joined[] = $part;
                 continue;
             }
@@ -1833,6 +1830,10 @@ class Compiler
     protected function reduce($value, $inExp = false)
     {
 
+		if( is_string($value) ){
+			return $value;
+		}
+
         switch ($value[0]) {
             case Type::T_EXPRESSION:
                 list(, $op, $left, $right, $inParens) = $value;
@@ -2064,7 +2065,8 @@ class Compiler
                 $value = $this->extractInterpolation($value);
 
                 if ($value[0] !== Type::T_LIST) {
-                    return array(Type::T_KEYWORD, $this->compileValue($value));
+                    return $this->compileValue($value);
+                    //return array(Type::T_KEYWORD, $this->compileValue($value));
                 }
 
                 foreach ($value[2] as $key => $item) {
@@ -2080,7 +2082,8 @@ class Compiler
                 return $value->normalize();
 
             case Type::T_INTERPOLATE:
-                return array(Type::T_KEYWORD, $this->compileValue($value));
+                return $this->compileValue($value);
+                //return array(Type::T_KEYWORD, $this->compileValue($value));
 
             default:
                 return $value;
@@ -2479,9 +2482,13 @@ class Compiler
     {
         $value = $this->reduce($value);
 
+        if( is_string($value) ){
+			return $value;
+		}
+
         switch ($value[0]) {
-            case Type::T_KEYWORD:
-                return $value[1];
+            //case Type::T_KEYWORD:
+            //    return $value[1];
 
             case Type::T_COLOR:
                 // [1] - red component (either number for a %)
@@ -2577,11 +2584,13 @@ class Compiler
 
                 switch ($reduced[0]) {
                     case Type::T_STRING:
-                        $reduced = array(Type::T_KEYWORD, $this->compileStringContent($reduced));
+                        $reduced = $this->compileStringContent($reduced);
+                        //$reduced = array(Type::T_KEYWORD, $this->compileStringContent($reduced));
                         break;
 
                     case Type::T_NULL:
-                        $reduced = array(Type::T_KEYWORD, '');
+                        $reduced = '';
+                        //$reduced = array(Type::T_KEYWORD, '');
                 }
 
                 return $this->compileValue($reduced);
@@ -3751,7 +3760,8 @@ class Compiler
             return self::$emptyString;
         }
 
-        return array(Type::T_KEYWORD, $value);
+		return $value;
+        //return array(Type::T_KEYWORD, $value);
     }
 
     /**
@@ -3799,7 +3809,8 @@ class Compiler
                 $list[] = array(
                     Type::T_LIST,
                     '',
-                    array(array(Type::T_KEYWORD, $this->compileStringContent($this->coerceString($key))), $value)
+                    array($this->compileStringContent($this->coerceString($key)), $value)
+                    //array(array(Type::T_KEYWORD, $this->compileStringContent($this->coerceString($key))), $value)
                 );
             }
 
@@ -3832,25 +3843,25 @@ class Compiler
      *
      * @return array|null
      */
-    protected function coerceColor($value)
-    {
-        switch ($value[0]) {
-            case Type::T_COLOR:
-                return $value;
+    protected function coerceColor($value){
 
-            case Type::T_KEYWORD:
-                $name = strtolower($value[1]);
+		if( is_string($value) ){
+			$value = strtolower($value);
 
-                if (isset(Colors::$cssColors[$name])) {
-                    $rgba = explode(',', Colors::$cssColors[$name]);
+			if (isset(Colors::$cssColors[$value])) {
+				$rgba = explode(',', Colors::$cssColors[$value]);
 
-                    return isset($rgba[3])
-                        ? array(Type::T_COLOR, (int) $rgba[0], (int) $rgba[1], (int) $rgba[2], (int) $rgba[3])
-                        : array(Type::T_COLOR, (int) $rgba[0], (int) $rgba[1], (int) $rgba[2]);
-                }
+				return isset($rgba[3])
+					? array(Type::T_COLOR, (int) $rgba[0], (int) $rgba[1], (int) $rgba[2], (int) $rgba[3])
+					: array(Type::T_COLOR, (int) $rgba[0], (int) $rgba[1], (int) $rgba[2]);
+			}
 
-                return null;
-        }
+			return null;
+		}
+
+		if( $value[0] === Type::T_COLOR ){
+			return $value;
+		}
 
         return null;
     }
@@ -4141,11 +4152,7 @@ class Compiler
             return self::$null;
         }
 
-        if ($list[0] === Type::T_MAP ||
-            $list[0] === Type::T_STRING ||
-            $list[0] === Type::T_KEYWORD ||
-            $list[0] === Type::T_INTERPOLATE
-        ) {
+        if ( is_string($list) || $list[0] === Type::T_MAP || $list[0] === Type::T_STRING || $list[0] === Type::T_INTERPOLATE ) { //|| $list[0] === Type::T_KEYWORD
             $list = $this->coerceList($list, ' ');
         }
 
@@ -4781,7 +4788,8 @@ class Compiler
         $values = array();
 
         foreach ($args[0][2] as $name => $arg) {
-            $keys[] = array(Type::T_KEYWORD, $name);
+            $keys[] = $name;
+            //$keys[] = array(Type::T_KEYWORD, $name);
             $values[] = $arg;
         }
 
@@ -4855,19 +4863,11 @@ class Compiler
 
     protected function libTypeOf($args)
     {
+
         $value = $args[0];
 
         switch ($value[0]) {
-            case Type::T_KEYWORD:
-                if ($value === self::$true || $value === self::$false) {
-                    return 'bool';
-                }
 
-                if ($this->coerceColor($value)) {
-                    return 'color';
-                }
-
-                // fall-thru
             case Type::T_FUNCTION:
                 return 'string';
 
@@ -4876,9 +4876,21 @@ class Compiler
                     return 'arglist';
                 }
 
-                // fall-thru
+            // fall-thru
             default:
-                return $value[0];
+            if( count($args) == 1 && is_string($args[0]) ){
+
+				if ($args[0] === self::$true || $args[0] === self::$false) {
+					return 'bool';
+				}
+
+				if ($this->coerceColor($args[0])) {
+					return 'color';
+				}
+				return 'string';
+
+			}
+            return $value[0];
         }
     }
 
@@ -5100,7 +5112,8 @@ class Compiler
     protected function libInspect($args)
     {
         if ($args[0] === self::$null) {
-            return array(Type::T_KEYWORD, 'null');
+            return 'null';
+            //return array(Type::T_KEYWORD, 'null');
         }
 
         return $args[0];
