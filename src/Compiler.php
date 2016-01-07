@@ -2498,17 +2498,17 @@ class Compiler
                 // [2] - green component
                 // [3] - blue component
                 // [4] - optional alpha component
-                list(, $r, $g, $b) = $value;
 
-                $r = round($r);
-                $g = round($g);
-                $b = round($b);
+
+                $value[1] = round($value[1]);
+                $value[2] = round($value[2]);
+                $value[3] = round($value[3]);
 
                 if (count($value) === 5 && $value[4] !== 1) { // rgba
-                    return 'rgba(' . $r . ', ' . $g . ', ' . $b . ', ' . $value[4] . ')';
+                    return 'rgba(' . $value[1] . ', ' . $value[2] . ', ' . $value[3] . ', ' . $value[4] . ')';
                 }
 
-                $h = sprintf('#%02x%02x%02x', $r, $g, $b);
+                $h = sprintf('#%02x%02x%02x', $value[1], $value[2], $value[3]);
 
                 // Converting hex color to short notation (e.g. #003399 to #039)
                 if ($h[1] === $h[2] && $h[3] === $h[4] && $h[5] === $h[6]) {
