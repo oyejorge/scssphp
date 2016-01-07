@@ -2254,10 +2254,7 @@ class Parser
 
 					$ss = $this->count;
 
-					if ($this->matchChar('(') &&
-						($this->openString(')', $str, '(') || true) &&
-						$this->matchChar(')')
-					) {
+					if ($this->matchChar('(') && ($this->openString(')', $str, '(') || true) && $this->matchChar(')')) {
 						$parts[] = '(';
 
 						if (! empty($str)) {
@@ -2313,6 +2310,7 @@ class Parser
         if ( !$parts ) {
             return false;
         }
+
 
         $out = $parts;
 

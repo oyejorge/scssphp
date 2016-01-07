@@ -1083,7 +1083,7 @@ class Compiler
         $joined = array();
 
         foreach ($single as $part) {
-            if (empty($joined) || ! is_string($part) || preg_match('/[\[.:#%&]/', $part)) {
+            if( empty($joined) || !is_string($part) || preg_match('/[\[.:#%]/', $part)) {
                 $joined[] = $part;
                 continue;
             }
