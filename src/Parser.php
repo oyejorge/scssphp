@@ -150,13 +150,14 @@ class Parser
      *
      * @return \Leafo\ScssPhp\Block
      */
-    public function parse($buffer)
-    {
+    public function parse($buffer){
+
         $this->count           = 0;
         $this->env             = null;
         $this->inParens        = false;
         $this->eatWhiteDefault = true;
         $this->buffer          = rtrim($buffer, "\x00..\x1f");
+        $this->buffer_len      = strlen($this->buffer);
 
         $this->saveEncoding();
         $this->extractLineNumbers($buffer);
@@ -170,7 +171,7 @@ class Parser
             ;
         }
 
-        if ($this->count !== strlen($this->buffer)) {
+        if( $this->count !== $this->buffer_len ){
             $this->throwParseError();
         }
 
@@ -233,6 +234,7 @@ class Parser
         $this->inParens        = false;
         $this->eatWhiteDefault = true;
         $this->buffer          = (string) $buffer;
+        $this->buffer_len      = strlen($this->buffer);
 
         $this->saveEncoding();
 
@@ -861,7 +863,7 @@ class Parser
     {
         $token = null;
 
-        $end = strlen($this->buffer);
+        $end = $this->buffer_len;
 
         // look for either ending delim, escape, or string interpolation
         foreach (array('#{', '\\', $delim) as $lookahead) {
@@ -2448,14 +2450,18 @@ class Parser
      *
      * @return boolean
      */
-    protected function end()
-    {
-        if ($this->matchChar(';')) {
+    protected function end(){
+
+		//end of the buffer
+		if( $this->count === $this->buffer_len ){
+			return true;
+		}
+
+        if( $this->buffer[$this->count] === '}' ){
             return true;
         }
 
-        if ($this->count === strlen($this->buffer) || $this->buffer[$this->count] === '}') {
-            // if there is end of file or a closing block next then we don't need a ;
+        if( $this->matchChar(';') ){
             return true;
         }
 
