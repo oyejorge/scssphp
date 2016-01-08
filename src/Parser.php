@@ -282,8 +282,8 @@ class Parser
      *
      * @return boolean
      */
-    protected function parseChunk()
-    {
+    protected function parseChunk(){
+
 		if( !isset($this->buffer[$this->count]) ){
 			return false;
 		}
@@ -298,16 +298,16 @@ class Parser
 
 
         // misc
-        if ( $char === '-' && $this->literal('-->',3)) {
+        if( $char === '-' && $this->literal('-->',3) ){
             return true;
         }
 
-        if ( $char === '<' && $this->literal('<!--',4) ) {
+        if( $char === '<' && $this->literal('<!--',4) ){
             return true;
 		}
 
         // extra stuff
-        if ( $char === ';' ) {
+        if( $char === ';' ){
 			$this->count++;
 			$this->whitespace();
 			return true;
@@ -315,7 +315,7 @@ class Parser
 
 
         // closing a block
-        if ($char === '}') {
+        if( $char === '}' ){
             $this->count++;
             $this->whitespace();
             $block = $this->popBlock();
@@ -334,7 +334,7 @@ class Parser
         }
 
         // variable assigns
-        if ( $char === '$' && $this->variable($name) && $this->matchChar(':') && $this->valueList($value) && $this->end() ) {
+        if( $char === '$' && $this->variable($name) && $this->matchChar(':') && $this->valueList($value) && $this->end() ){
             // check for '!flag'
             $assignmentFlag = $this->stripAssignmentFlag($value);
             $this->append(array(Type::T_ASSIGN, $name, $value, $assignmentFlag), $s);
@@ -344,41 +344,44 @@ class Parser
         $this->seek($s);
 
 
+		// opening css block
+        if( $this->ExpectSelector() ){
+			if( $this->selectors($selectors) && $this->matchChar('{') ){
+				$this->pushBlock($selectors, $s);
+				return true;
+			}
+
+			$this->seek($s);
+		}
+
+
         // property shortcut
-        // captures most properties before having to parse a selector
-        if ($this->keywordChar($char,$name, false) && $this->literal(': ',2) && $this->valueList($value) && $this->end() ) {
+        if( $this->keywordChar($char,$name, false) && $this->matchChar(':') && $this->valueList($value) && $this->end() ){
             $this->append(array(Type::T_ASSIGN, $name, $value), $s);
             return true;
         }
 
         $this->seek($s);
 
-        // opening css block
-        if ($this->selectors($selectors) && $this->matchChar('{')) {
-            $this->pushBlock($selectors, $s);
-            return true;
-        }
-
-        $this->seek($s);
 
         // property assign, or nested assign
-        if ($this->propertyName($name) && $this->matchChar(':')) {
+        if( $this->propertyName($name) && $this->matchChar(':') ){
             $foundSomething = false;
 
-            if ($this->valueList($value)) {
+            if( $this->valueList($value) ){
                 $this->append(array(Type::T_ASSIGN, $name, $value), $s);
                 $foundSomething = true;
             }
 
-            if ($this->matchChar('{')) {
+            if( $this->matchChar('{') ){
                 $propBlock = $this->pushSpecialBlock(Type::T_NESTED_PROPERTY, $s);
                 $propBlock->prefix = $name;
                 $foundSomething = true;
-            } elseif ($foundSomething) {
+            }elseif( $foundSomething ){
                 $foundSomething = $this->end();
             }
 
-            if ($foundSomething) {
+            if( $foundSomething ){
                 return true;
             }
         }
@@ -387,6 +390,30 @@ class Parser
 
         return false;
     }
+
+
+    /**
+     * Quickly check to see if we need to try to parse selectors
+     *
+     */
+    protected function ExpectSelector(){
+
+		$next_close = strpos($this->buffer,'}',$this->count);
+
+		//block opening
+		if( strpos($this->buffer,'{',$this->count) < $next_close ){
+			return true;
+		}
+
+		// check for comments
+		// ex: /* } */
+		if( strpos($this->buffer,'/*',$this->count) < $next_close ){
+			return true;
+		}
+
+		return false;
+    }
+
 
     /**
      * Parse Directive
@@ -2067,30 +2094,25 @@ class Parser
      *
      * @return boolean
      */
-    protected function selectors(&$out)
-    {
-        $s = $this->count;
+    protected function selectors(&$selectors){
+
         $selectors = array();
 
-        while ($this->selector($sel)) {
+        while( $this->selector($sel) ){
             $selectors[] = $sel;
 
-            if (! $this->matchChar(',')) {
+            if( !$this->matchChar(',') ){
                 break;
             }
 
-            while ($this->matchChar(',')) {
+            while( $this->matchChar(',') ){
                 ; // ignore extra
             }
         }
 
-        if ( !$selectors ) {
-            $this->seek($s);
-
+        if( !$selectors ){
             return false;
         }
-
-        $out = $selectors;
 
         return true;
     }

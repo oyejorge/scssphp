@@ -57,7 +57,7 @@ class ExceptionTest extends \PHPUnit_Framework_TestCase
   foo : bar;
 END_OF_SCSS
                 ,
-                'unclosed block'
+                'parse error: failed at `.test {` (stdin) on line 1'
             ),
             array(<<<'END_OF_SCSS'
 .test {
